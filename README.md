@@ -1,4 +1,8 @@
-## Hi there 👋
+## Meowdy 🤠
+
+I'm a DevOps engineer currently working at GitHub! 
+
+I love infrastructure, pipelines, tools, and metrics, and doing it all at scale.
 
 <!--
 **petercort/petercort** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
