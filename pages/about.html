@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Peter Cort — About</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b1220; --card:#111a2b; --text:#e6edf3; --sub:#9fb0c6; --accent:#7cc1ff; --border:#22314d; }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#0b1220,#0e1526);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:900px;margin:0 auto;padding:32px 20px 48px}
+    header.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.4px;color:var(--text);text-decoration:none}
+    .badge{width:44px;height:44px;border-radius:12px;object-fit:cover;border:2px solid var(--border)}
+    nav{display:flex;gap:14px;font-weight:600}
+    nav a{padding:8px 12px;border:1px solid transparent;border-radius:10px}
+    nav a:hover{border-color:var(--border);background:#0c1424}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin:16px 0}
+    h1,h2{margin:0}
+    h1{font-size:32px;letter-spacing:.2px;margin-bottom:6px}
+    h2{font-size:20px;margin:14px 0 10px}
+    p{margin:10px 0;color:var(--sub);line-height:1.6}
+    ul{margin:8px 0 0;padding-left:18px}
+    li{margin:6px 0}
+    .pill{display:inline-block;padding:6px 10px;border:1px solid var(--border);border-radius:999px;margin:4px 6px 0 0;background:#0c1424}
+    footer{color:var(--sub);margin-top:28px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="index.html"><img class="badge" src="me.jpeg" alt="Peter Cort"><span>Peter Cort</span></a>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="resume.html">Resume</a>
+        <a href="projects.html">Projects</a>
+        <a href="about.html">About</a>
+      </nav>
+    </header>
+
+    <section class="card">
+      <h1>About Me</h1>
+      <p>Hi! I'm an endurance athlete and cat dad who works for GitHub in my free time.</p>
+      <p>In this phase of my life I'm training for a marathon, but my first love is cycling.</p>
+      <p>Along with that comes a love of coffee, carbs in all their forms, and data!</p>
+      <p>In my professional life I focus on all things DevOps. I got my start modernizing CI/CD pipelines, progressed into platform engineering with a focus on IaC and Kubernetes, and currently at GitHub in Expert Services helping our largest regulated industry customers adopt the platform at scale.</p>
+    </section>
+    <section class="card">
+      <h2>Cool stuff I like to share</h2>
+      <ul>
+        <li>7th overall in the <a href="https://www.road-results.com/?n=series&sn=bumps&y=2024">BUMPS</a> 2024 road race series.</li>
+        <li>1:07:16 PR of the <a href="https://www.mwarbh.org/">Mt. Washington hillclimb</a> in 2024.</li>
+        <li><a href="https://hof.everesting.com/athletes/77079e8d-38ff-4f36-a5b2-400058b79207">Everesting, <a href="https://www.strava.com/activities/3610515351">June 2020</a></li>
+        <li><a href="https://www.clubcinglesventoux.org/">Cinglés du Mont Ventoux</a> member, <a href="https://www.strava.com/activities/11805939985">July 2024</a></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Get in touch</h2>
+      <p>Email works best: <a href="mailto:petercort@gmail.com">petercort@gmail.com</a>. I am also active on GitHub at <a href="https://github.com/petercort">github.com/petercort</a>.</p>
+    </section>
+
+    <footer>
+      <p>© Peter Cort • Built with GitHub Pages</p>
+    </footer>
+  </div>
+</body>
+</html>

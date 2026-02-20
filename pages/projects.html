@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Peter Cort — Projects</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b1220; --card:#111a2b; --text:#e6edf3; --sub:#9fb0c6; --accent:#7cc1ff; --border:#22314d; }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#0b1220,#0e1526);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 48px}
+    header.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.4px;color:var(--text);text-decoration:none}
+    .badge{width:44px;height:44px;border-radius:12px;object-fit:cover;border:2px solid var(--border)}
+    nav{display:flex;gap:14px;font-weight:600}
+    nav a{padding:8px 12px;border:1px solid transparent;border-radius:10px}
+    nav a:hover{border-color:var(--border);background:#0c1424}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin:16px 0}
+    h1,h2,h3{margin:0}
+    h1{font-size:32px;letter-spacing:.2px;margin-bottom:6px}
+    h2{font-size:20px;margin:0 0 12px}
+    h3{font-size:16px;margin:0 0 6px}
+    p{margin:6px 0;color:var(--sub)}
+    ul{margin:8px 0 0;padding-left:18px}
+    li{margin:6px 0}
+    .tag{display:inline-block;padding:6px 10px;border:1px solid var(--border);border-radius:10px;margin:4px 6px 0 0;background:#0c1424;font-size:13px}
+    footer{color:var(--sub);margin-top:28px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="index.html"><img class="badge" src="me.jpeg" alt="Peter Cort"><span>Peter Cort</span></a>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="resume.html">Resume</a>
+        <a href="projects.html">Projects</a>
+        <a href="about.html">About</a>
+      </nav>
+    </header>
+
+    <section class="card">
+      <h1>Projects</h1>
+      <p>Selected work that's fun and interesting!</p>
+    </section>
+    
+    <section class="card">
+      <h2><a href="https://github.com/petercort/RunWatch">RunWatch - Actions Dashboard</a></h2>
+      <p>Yet another actions dashboard to track workflows across multiple orgs and repositories in a single pane of glass.</p>
+      <ul>
+        <li>Track workflow progress, including alerts on long queued workflows, and failures.</li>
+        <li>View entire runner fleet with filters.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Apache Devlake (contributor)</h2>
+      <p>DORA metrics tool</p>
+      <ul>
+        <li>Built an at <a href="https://github.com/petercort/devlake-configuration-at-scale">scale adoption script set</a> to quickly onboard large enterprises.</li>
+        <li><a href="https://github.com/apache/incubator-devlake/pull/8088">Bug fix</a> for org processing</li>
+      </ul>
+    </section>
+
+    <section class="card">
+    <h2><a href="https://github.com/petercort/FBF-Buddy">FBF Buddy - Discord App</a></h2>
+      <p>A discord app to integrate with Strava and other tools for my local bike group.</p>
+      <ul>
+        <li>Track chain wax life.</li>
+        <li>Get bike data.</li>
+        <li>Get ride info.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+    <h2><a href="https://github.com/petercort/split-the-trip">Split the trip</a></h2>
+      <p>App to help coordinate expenses from trips or dinner!</p>
+    </section>
+
+    <footer>
+      <p>© Peter Cort • Built with GitHub Pages</p>
+    </footer>
+  </div>
+</body>
+</html>
