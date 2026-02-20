@@ -1,5 +1,5 @@
-Here you can say lots of fun things about your site.
+This blog is sometimes a silly place. Sometimes it's a serious place. 
 
-Maybe say a some things about yourself.
+Too many blogs are focused on grind culture and being a 10x developer. 
 
-Or maybe what you plan to blog about.
+I'm here to find effectiveness in the fun fun. 
