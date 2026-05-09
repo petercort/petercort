@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Copilot Customizations — Tree View</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --panel: #f6f8fa;
+    --border: #d0d7de;
+    --text: #1f2328;
+    --muted: #656d76;
+    --hover: #eaeef2;
+    --selected: #ddf4ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 20px 28px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { margin: 0 0 4px; font-size: 20px; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; }
+  main {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    padding: 24px 28px;
+    align-items: start;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 8px;
+  }
+  aside { display: flex; flex-direction: column; gap: 16px; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .card h2 {
+    margin: 0 0 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px; font-size: 13px;
+  }
+  .legend-item:last-child { margin-bottom: 0; }
+  .swatch {
+    width: 14px; height: 14px; border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.1);
+    flex-shrink: 0;
+  }
+  .legend-label { font-weight: 600; text-transform: capitalize; }
+  .legend-desc { color: var(--muted); }
+
+  .control {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+  }
+  .control input { accent-color: #0969da; }
+
+  /* ---- Tree view ---- */
+  ul.tree, ul.tree ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  ul.tree ul {
+    padding-left: 18px;
+    border-left: 1px dotted var(--border);
+    margin-left: 9px;
+  }
+  ul.tree li { margin: 0; }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    user-select: none;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .row:hover { background: var(--hover); }
+  .row.selected { background: var(--selected); }
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px; height: 14px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 10px;
+    transition: transform 0.15s;
+  }
+  .toggle.empty { visibility: hidden; }
+  li.collapsed > ul { display: none; }
+  li:not(.collapsed) > .row .toggle { transform: rotate(90deg); }
+  .icon { width: 16px; text-align: center; display: inline-flex; justify-content: center; }
+  .dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  }
+  .label {
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .note {
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif;
+    font-size: 12px;
+    margin-left: 6px;
+    font-weight: 400;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Copilot Customizations</h1>
+  <p>All customization files Copilot reads. Click ▶ to expand or collapse.</p>
+</header>
+<main>
+  <div class="panel">
+    <ul id="tree" class="tree" role="tree"></ul>
+  </div>
+  <aside>
+    <div class="card">
+      <h2>Options</h2>
+      <label class="control">
+        <input type="checkbox" id="toggle-claude" />
+        Show Claude/agent files Copilot reads
+      </label>
+    </div>
+    <div class="card">
+      <h2>Legend</h2>
+      <div id="legend"></div>
+    </div>
+    <div class="card">
+      <h2>About</h2>
+      <p style="margin:0;font-size:13px;color:var(--muted);line-height:1.5">
+        Each leaf is a customization file. Colored dots indicate how Copilot
+        loads the file. Folders show 📁; user-scope shows 👤; org-scope shows 🏢.
+        Toggle the option to hide Claude-format paths Copilot also reads.
+        Sources: VS Code docs (custom-instructions, prompt-files, custom-agents, agent-skills).
+      </p>
+    </div>
+  </aside>
+</main>
+
+<script>
+  // ----- Color configuration -----
+  const COLORS = {
+    blue:   { fill: "#0969da", tint: "#ddf4ff", description: "always loaded" },
+    green:  { fill: "#1a7f37", tint: "#dafbe1", description: "dynamically loaded (on demand)" },
+    purple: { fill: "#8250df", tint: "#fbefff", description: "user-invoked (slash command / mode)" },
+    orange: { fill: "#bc4c00", tint: "#fff1e5", description: "conditionally loaded (applyTo / glob)" },
+    gray:   { fill: "#57606a", tint: "#eaeef2", description: "Claude format (Copilot also reads)" }
+  };
+
+  // ----- Tree data -----
+  // `claude: true` flags nodes that are Claude-format files that Copilot reads.
+  const data = {
+    name: "Copilot customization sources",
+    children: [
+      {
+        name: "<workspace>/",
+        icon: "📁",
+        children: [
+          {
+            name: ".github/",
+            icon: "📁",
+            children: [
+              { name: "copilot-instructions.md", color: "blue", note: "always-on repo instructions" },
+              {
+                name: "instructions/",
+                icon: "📁",
+                children: [
+                  { name: "*.instructions.md", color: "orange", note: "applyTo glob (file-based)" }
+                ]
+              },
+              {
+                name: "prompts/",
+                icon: "📁",
+                children: [
+                  { name: "*.prompt.md", color: "purple", note: "/slash command" }
+                ]
+              },
+              {
+                name: "agents/",
+                icon: "📁",
+                children: [
+                  { name: "*.agent.md", color: "green", note: "custom agent" }
+                ]
+              },
+              {
+                name: "skills/",
+                icon: "📁",
+                children: [
+                  {
+                    name: "<skill-name>/",
+                    icon: "📁",
+                    children: [
+                      { name: "SKILL.md", color: "green", note: "loaded when relevant" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          { name: "AGENTS.md",       color: "blue", note: "always-on (functionally the same as copilot-instructions.md)" },
+          { name: "CLAUDE.md",       color: "gray", claude: true, note: "always-on (Claude format)" },
+          { name: "CLAUDE.local.md", color: "gray", claude: true, note: "local-only, not committed" },
+          {
+            name: ".claude/",
+            icon: "📁",
+            claude: true,
+            children: [
+              { name: "CLAUDE.md", color: "gray", claude: true, note: "always-on (Claude format)" },
+              {
+                name: "rules/",
+                icon: "📁",
+                claude: true,
+                children: [
+                  { name: "*.md", color: "orange", claude: true, note: "file-based (uses paths glob)" }
+                ]
+              },
+              {
+                name: "agents/",
+                icon: "📁",
+                claude: true,
+                children: [
+                  { name: "*.md", color: "green", claude: true, note: "custom agent (Claude format)" }
+                ]
+              },
+              {
+                name: "skills/",
+                icon: "📁",
+                claude: true,
+                children: [
+                  { name: "<skill-name>/SKILL.md", color: "green", claude: true, note: "skill (Claude location)" }
+                ]
+              }
+            ]
+          },
+          {
+            name: ".agents/",
+            icon: "📁",
+            children: [
+              {
+                name: "skills/",
+                icon: "📁",
+                children: [
+                  { name: "<skill-name>/SKILL.md", color: "green", note: "skill (open standard location)" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name: "<user profile>/  (~/)",
+        icon: "👤",
+        children: [
+          {
+            name: ".copilot/",
+            icon: "📁",
+            children: [
+              {
+                name: "instructions/",
+                icon: "📁",
+                children: [
+                  { name: "*.instructions.md", color: "orange", note: "personal file-based instructions" }
+                ]
+              },
+              {
+                name: "agents/",
+                icon: "📁",
+                children: [
+                  { name: "*.agent.md", color: "green", note: "personal custom agents" }
+                ]
+              },
+              {
+                name: "skills/",
+                icon: "📁",
+                children: [
+                  { name: "<skill-name>/SKILL.md", color: "green", note: "personal skills" }
+                ]
+              }
+            ]
+          },
+          {
+            name: ".claude/",
+            icon: "📁",
+            claude: true,
+            children: [
+              { name: "CLAUDE.md", color: "gray", claude: true, note: "personal always-on (Claude)" },
+              {
+                name: "rules/",
+                icon: "📁",
+                claude: true,
+                children: [
+                  { name: "*.md", color: "orange", claude: true, note: "personal file-based (Claude)" }
+                ]
+              },
+              {
+                name: "agents/",
+                icon: "📁",
+                claude: true,
+                children: [
+                  { name: "*.md", color: "green", claude: true, note: "personal agents (Claude)" }
+                ]
+              },
+              {
+                name: "skills/",
+                icon: "📁",
+                claude: true,
+                children: [
+                  { name: "<skill-name>/SKILL.md", color: "green", claude: true, note: "personal skills (Claude)" }
+                ]
+              }
+            ]
+          },
+          {
+            name: ".agents/",
+            icon: "📁",
+            children: [
+              {
+                name: "skills/",
+                icon: "📁",
+                children: [
+                  { name: "<skill-name>/SKILL.md", color: "green", note: "personal skills (open standard)" }
+                ]
+              }
+            ]
+          },
+          {
+            name: "<VS Code user data>/",
+            icon: "📁",
+            note: "profile-specific; managed via Customizations editor",
+            children: [
+              { name: "*.prompt.md",       color: "purple", note: "personal prompt files" },
+              { name: "*.instructions.md", color: "orange", note: "personal instructions" },
+              { name: "*.agent.md",        color: "green",  note: "personal custom agents" }
+            ]
+          }
+        ]
+      },
+      {
+        name: "GitHub organization",
+        icon: "🏢",
+        note: "shared across workspaces (opt-in)",
+        children: [
+          { name: "Organization instructions", color: "blue",  note: "github.copilot.chat.organizationInstructions.enabled" },
+          { name: "Organization custom agents", color: "green", note: "github.copilot.chat.organizationCustomAgents.enabled" }
+        ]
+      }
+    ]
+  };
+
+  // ----- Legend -----
+  const legendEl = document.getElementById("legend");
+  for (const [key, val] of Object.entries(COLORS)) {
+    const row = document.createElement("div");
+    row.className = "legend-item";
+    row.innerHTML = `
+      <span class="swatch" style="background:${val.fill}"></span>
+      <span><span class="legend-label" style="background:${val.tint};color:${val.fill};padding:1px 6px;border-radius:3px">${key}</span>
+      <span class="legend-desc"> — ${val.description}</span></span>`;
+    legendEl.appendChild(row);
+  }
+
+  // ----- Tree rendering -----
+  function buildNode(node) {
+    const li = document.createElement("li");
+    li.setAttribute("role", "treeitem");
+    if (node.claude) li.dataset.claude = "true";
+    const isFolder = Array.isArray(node.children) && node.children.length > 0;
+
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const toggle = document.createElement("span");
+    toggle.className = "toggle" + (isFolder ? "" : " empty");
+    toggle.textContent = "▶";
+    row.appendChild(toggle);
+
+    const icon = document.createElement("span");
+    icon.className = "icon";
+    if (isFolder) {
+      icon.textContent = node.icon || "📁";
+    } else {
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      const c = COLORS[node.color];
+      dot.style.background = c ? c.fill : "transparent";
+      if (!c) dot.style.borderStyle = "dashed";
+      dot.title = c ? `${node.color} — ${c.description}` : "";
+      icon.appendChild(dot);
+    }
+    row.appendChild(icon);
+
+    const label = document.createElement("span");
+    label.className = "label";
+    label.textContent = node.name;
+    if (!isFolder) {
+      const c = COLORS[node.color];
+      if (c) {
+        label.style.background = c.tint;
+        label.style.color = c.fill;
+      }
+    }
+    row.appendChild(label);
+
+    if (node.note) {
+      const note = document.createElement("span");
+      note.className = "note";
+      note.textContent = "— " + node.note;
+      row.appendChild(note);
+    }
+
+    li.appendChild(row);
+
+    if (isFolder) {
+      const ul = document.createElement("ul");
+      ul.setAttribute("role", "group");
+      node.children.forEach(child => ul.appendChild(buildNode(child)));
+      li.appendChild(ul);
+
+      const toggleFn = (e) => {
+        e.stopPropagation();
+        li.classList.toggle("collapsed");
+      };
+      toggle.addEventListener("click", toggleFn);
+      row.addEventListener("dblclick", toggleFn);
+    }
+
+    row.addEventListener("click", () => {
+      document.querySelectorAll(".row.selected")
+        .forEach(el => el.classList.remove("selected"));
+      row.classList.add("selected");
+    });
+
+    return li;
+  }
+
+  document.getElementById("tree").appendChild(buildNode(data));
+
+  // ----- Claude visibility toggle -----
+  const claudeCheckbox = document.getElementById("toggle-claude");
+  function applyClaudeVisibility() {
+    const show = claudeCheckbox.checked;
+    document.querySelectorAll('li[data-claude="true"]').forEach(li => {
+      li.style.display = show ? "" : "none";
+    });
+  }
+  claudeCheckbox.addEventListener("change", applyClaudeVisibility);
+  applyClaudeVisibility();
+</script>
+</body>
+</html>
