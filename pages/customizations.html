@@ -148,6 +148,18 @@
         <input type="checkbox" id="toggle-claude" />
         Show Claude/agent files Copilot reads
       </label>
+      <label class="control">
+        <input type="checkbox" id="toggle-cli" checked />
+        Show Copilot CLI files
+      </label>
+      <label class="control">
+        <input type="checkbox" id="toggle-jetbrains" checked />
+        Show JetBrains IDE files
+      </label>
+      <label class="control">
+        <input type="checkbox" id="toggle-other-ide" checked />
+        Show Visual Studio &amp; Eclipse files
+      </label>
     </div>
     <div class="card">
       <h2>Legend</h2>
@@ -158,8 +170,14 @@
       <p style="margin:0;font-size:13px;color:var(--muted);line-height:1.5">
         Each leaf is a customization file. Colored dots indicate how Copilot
         loads the file. Folders show 📁; user-scope shows 👤; org-scope shows 🏢.
-        Toggle the option to hide Claude-format paths Copilot also reads.
-        Sources: VS Code docs (custom-instructions, prompt-files, custom-agents, agent-skills).
+        Use the toggles to filter Claude-format paths, Copilot CLI files, and
+        per-IDE personal instruction folders. Workspace files
+        (<code>.github/copilot-instructions.md</code>, <code>.github/prompts/</code>, <code>AGENTS.md</code>) are
+        IDE-agnostic — VS Code, JetBrains, Visual Studio, Eclipse and Xcode all read them.
+        Sources: VS Code docs (custom-instructions, prompt-files, custom-agents,
+        agent-skills, mcp-servers), GitHub Copilot CLI docs
+        (cli-config-dir-reference, add-custom-instructions), and GitHub docs
+        (configure-custom-instructions-in-your-ide).
       </p>
     </div>
   </aside>
@@ -172,7 +190,8 @@
     green:  { fill: "#1a7f37", tint: "#dafbe1", description: "dynamically loaded (on demand)" },
     purple: { fill: "#8250df", tint: "#fbefff", description: "user-invoked (slash command / mode)" },
     orange: { fill: "#bc4c00", tint: "#fff1e5", description: "conditionally loaded (applyTo / glob)" },
-    gray:   { fill: "#57606a", tint: "#eaeef2", description: "Claude format (Copilot also reads)" }
+    gray:   { fill: "#57606a", tint: "#eaeef2", description: "Claude format (Copilot also reads)" },
+    teal:   { fill: "#1f6feb", tint: "#e6f4ff", description: "tool / integration config (MCP)" }
   };
 
   // ----- Tree data -----
@@ -222,12 +241,40 @@
                     ]
                   }
                 ]
-              }
+              },
+              {
+                name: "hooks/",
+                icon: "📁",
+                cli: true,
+                children: [
+                  { name: "*.json", color: "green", cli: true, note: "CLI: repo-level hooks" }
+                ]
+              },
+              {
+                name: "copilot/",
+                icon: "📁",
+                cli: true,
+                children: [
+                  { name: "settings.json",       color: "blue", cli: true, note: "CLI: repo settings (committed)" },
+                  { name: "settings.local.json", color: "blue", cli: true, note: "CLI: local-only overrides (.gitignore)" }
+                ]
+              },
+              { name: "lsp.json", color: "teal", cli: true, note: "CLI: project LSP servers (highest priority)" },
+              { name: "mcp.json", color: "teal", cli: true, note: "CLI: project MCP servers (alt to root /.mcp.json)" }
             ]
           },
+          {
+            name: ".vscode/",
+            icon: "📁",
+            children: [
+              { name: "mcp.json", color: "teal", note: "workspace MCP servers" }
+            ]
+          },
+          { name: ".mcp.json",        color: "teal",  cli: true, note: "CLI: project MCP servers (also .github/mcp.json)" },
           { name: "AGENTS.md",       color: "blue", note: "always-on (functionally the same as copilot-instructions.md)" },
           { name: "CLAUDE.md",       color: "gray", claude: true, note: "always-on (Claude format)" },
           { name: "CLAUDE.local.md", color: "gray", claude: true, note: "local-only, not committed" },
+          { name: "GEMINI.md",       color: "gray", cli: true, note: "CLI: Gemini-format always-on (root only)" },
           {
             name: ".claude/",
             icon: "📁",
@@ -283,6 +330,7 @@
             name: ".copilot/",
             icon: "📁",
             children: [
+              { name: "copilot-instructions.md", color: "blue", cli: true, note: "CLI: personal always-on instructions" },
               {
                 name: "instructions/",
                 icon: "📁",
@@ -303,7 +351,11 @@
                 children: [
                   { name: "<skill-name>/SKILL.md", color: "green", note: "personal skills" }
                 ]
-              }
+              },
+              { name: "hooks/",            color: "green", cli: true, note: "CLI: user-level hook scripts" },
+              { name: "settings.json",     color: "blue",  cli: true, note: "CLI: user settings (model, theme, hooks, skillDirectories…)" },
+              { name: "mcp-config.json",   color: "teal",  cli: true, note: "CLI: user-level MCP servers" },
+              { name: "lsp-config.json",   color: "teal",  cli: true, note: "CLI: user-level LSP servers" }
             ]
           },
           {
@@ -354,11 +406,39 @@
           {
             name: "<VS Code user data>/",
             icon: "📁",
-            note: "profile-specific; managed via Customizations editor",
+            note: "VS Code: profile-specific; managed via Customizations editor",
             children: [
               { name: "*.prompt.md",       color: "purple", note: "personal prompt files" },
               { name: "*.instructions.md", color: "orange", note: "personal instructions" },
-              { name: "*.agent.md",        color: "green",  note: "personal custom agents" }
+              { name: "*.agent.md",        color: "green",  note: "personal custom agents" },
+              { name: "mcp.json",          color: "teal",   note: "user-profile MCP servers (MCP: Open User Configuration)" }
+            ]
+          },
+          {
+            name: ".config/github-copilot/intellij/",
+            icon: "📁",
+            ide: "jetbrains",
+            note: "JetBrains IDEs (IntelliJ, PyCharm, GoLand, WebStorm, …)",
+            children: [
+              { name: "global-copilot-instructions.md", color: "blue", ide: "jetbrains", note: "JetBrains: global personal instructions" }
+            ]
+          },
+          {
+            name: ".config/github-copilot/visualstudio/",
+            icon: "📁",
+            ide: "other",
+            note: "Visual Studio (Windows): %LOCALAPPDATA%\\github-copilot\\visualstudio\\",
+            children: [
+              { name: "global-copilot-instructions.md", color: "blue", ide: "other", note: "Visual Studio: global personal instructions" }
+            ]
+          },
+          {
+            name: ".config/github-copilot/eclipse/",
+            icon: "📁",
+            ide: "other",
+            note: "Eclipse IDE",
+            children: [
+              { name: "global-copilot-instructions.md", color: "blue", ide: "other", note: "Eclipse: global personal instructions" }
             ]
           }
         ]
@@ -392,6 +472,8 @@
     const li = document.createElement("li");
     li.setAttribute("role", "treeitem");
     if (node.claude) li.dataset.claude = "true";
+    if (node.cli) li.dataset.cli = "true";
+    if (node.ide) li.dataset.ide = node.ide;
     const isFolder = Array.isArray(node.children) && node.children.length > 0;
 
     const row = document.createElement("div");
@@ -473,6 +555,32 @@
   }
   claudeCheckbox.addEventListener("change", applyClaudeVisibility);
   applyClaudeVisibility();
+
+  // ----- CLI visibility toggle -----
+  const cliCheckbox = document.getElementById("toggle-cli");
+  function applyCliVisibility() {
+    const show = cliCheckbox.checked;
+    document.querySelectorAll('li[data-cli="true"]').forEach(li => {
+      li.style.display = show ? "" : "none";
+    });
+  }
+  cliCheckbox.addEventListener("change", applyCliVisibility);
+  applyCliVisibility();
+
+  // ----- IDE visibility toggles -----
+  function makeIdeToggle(checkboxId, ideValue) {
+    const cb = document.getElementById(checkboxId);
+    function apply() {
+      const show = cb.checked;
+      document.querySelectorAll(`li[data-ide="${ideValue}"]`).forEach(li => {
+        li.style.display = show ? "" : "none";
+      });
+    }
+    cb.addEventListener("change", apply);
+    apply();
+  }
+  makeIdeToggle("toggle-jetbrains", "jetbrains");
+  makeIdeToggle("toggle-other-ide", "other");
 </script>
 </body>
 </html>
